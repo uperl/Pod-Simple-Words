@@ -28,7 +28,7 @@ subtest 'basic' => sub {
   is
     \%actual,
     hash {
-      field DESCRIPTION => hash {
+      field description => hash {
         field file => 'Basic.pod';
         field ln   => 1;
         end;
@@ -76,7 +76,7 @@ subtest 'unicode' => sub {
   is
     \%actual,
     hash {
-      field DESCRIPTION => 1;
+      field description => 1;
       field In => 1;
       field Russian => 1;
       field we => 1;
@@ -116,7 +116,7 @@ subtest 'apostrophe' => sub {
   is
     \%actual,
     hash {
-      field DESCRIPTION => 1;
+      field description => 1;
       field "Graham's" => 1;
       field Test => 1;
       end;
@@ -238,8 +238,8 @@ subtest 'stop words' => sub {
   is
     \%actual,
     hash {
-      field 'DESCRIPTION' => 1;
-      field 'huh' => 1;
+      field description => 1;
+      field huh => 1;
       end;
     },
   ;
@@ -283,8 +283,8 @@ subtest 'stop words (just for) ' => sub {
   is
     \%actual,
     hash {
-      field 'DESCRIPTION' => 1;
-      field 'huh' => 1;
+      field description => 1;
+      field huh => 1;
       end;
     },
   ;
@@ -330,7 +330,7 @@ subtest 'comments in verbatim block' => sub {
   is
     \%actual,
     {
-      A => [5], NAME => [3], SYNOPSIS => [7], Thing => [5],
+      A => [5], name => [3], synopsis => [7], Thing => [5],
       comment => [11,12], one => [11], two => [12],
     },
   ;
