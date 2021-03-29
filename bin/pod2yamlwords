@@ -1,0 +1,24 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use 5.022;
+use lib::findbin '../lib'; # dev-only
+use Pod::Simple::Words;
+use YAML qw( Dump );
+
+# PODNAME: pod2yamlwords
+# DESCRIPTION: Dump words from POD as YAML
+# VERSION
+
+my $filename = shift @ARGV;
+unless(defined $filename)
+{
+  say STDERR "usage: $0 filename";
+  exit 2;
+}
+
+my $parser = Pod::Simple::Words->new;
+$parser->parse_file($filename);
+
+print Dump($parser->words);
