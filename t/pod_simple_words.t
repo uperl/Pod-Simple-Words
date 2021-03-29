@@ -1,6 +1,6 @@
 use Test2::V0 -no_srand => 1;
-use utf8;
 use 5.026;
+use utf8;
 use Pod::Simple::Words;
 use Path::Tiny qw( path );
 use Encode qw( encode );
@@ -81,7 +81,7 @@ subtest 'unicode' => sub {
       field Russian => 1;
       field we => 1;
       field say => 1;
-      field Привет => 1;
+      field 'Привет' => 1;
       end;
     },
   ;
