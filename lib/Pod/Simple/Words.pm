@@ -51,17 +51,25 @@ sub new ($class)
 
 sub _handle_element_start ($self, $tagname, $attrhash, @)
 {
+  $self->line_number($attrhash->{start_line}) if defined $attrhash->{start_line};
+
   if($tagname eq 'L')
   {
-    # TODO
+    my @row = ( $attrhash->{type} . "_link", $self->source_filename, $self->line_number, $attrhash->{to}.'' );
+    $self->callback->(@row);
   }
   elsif($tagname eq 'for')
   {
     $self->target($attrhash->{target});
   }
-  $self->line_number($attrhash->{start_line}) if defined $attrhash->{start_line};
-  $self->in_verbatim($self->in_verbatim+1)    if $tagname eq 'Verbatim';
-  $self->in_head1($self->in_head1+1)          if $tagname eq 'head1';
+  elsif($tagname eq 'Verbatim')
+  {
+    $self->in_verbatim($self->in_verbatim+1);
+  }
+  elsif($tagname eq 'head1')
+  {
+    $self->in_head1($self->in_head1+1);
+  }
   ();
 }
 
