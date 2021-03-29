@@ -337,4 +337,56 @@ subtest 'comments in verbatim block' => sub {
 
 };
 
+subtest 'links' => sub {
+  my $pod = <<~'POD';
+    =head1 SEE ALSO
+
+    =over 4
+
+    =item L<some text|FFI::Platypus>
+
+    =item L<the google|https://google.com>
+
+    =item L<pod2yamlwords>
+
+    =back
+
+    =cut
+    POD
+
+  my $parser = Pod::Simple::Words->new;
+
+  my %actual;
+  my @links;
+
+  $parser->callback(sub {
+    my($type, undef, $ln, $word) = @_;
+    if($type eq 'word')
+    {
+      $actual{$word}++;
+    }
+    elsif($type =~ /_link$/)
+    {
+      push @links, [$type, $ln, $word];
+    }
+  });
+
+  $parser->parse_string_document(encode('UTF-8', $pod, Encode::FB_CROAK));
+
+  is
+    \%actual,
+    { map { $_ => 1 } qw( see also some text the google pod2yamlwords ) },
+  ;
+
+  is
+    \@links,
+    [
+      [ pod_link => 5, 'FFI::Platypus'      ],
+      [ url_link => 7, 'https://google.com' ],
+      [ pod_link => 9, 'pod2yamlwords'      ],
+    ],
+  ;
+
+};
+
 done_testing;
