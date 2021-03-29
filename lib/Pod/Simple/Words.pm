@@ -2,8 +2,8 @@ package Pod::Simple::Words;
 
 use strict;
 use warnings;
-use 5.022;
-use experimental qw( signatures postderef );
+use 5.026;
+use experimental qw( signatures );
 use JSON::MaybeXS qw( encode_json );
 use base qw( Pod::Simple );
 
@@ -63,11 +63,24 @@ sub _handle_element_end ($self, $tagname, @)
 
 sub _add_words ($self, $line)
 {
-  foreach my $word (split /\b{wb}/, $line)
+  foreach my $frag (split /\s/, $line)
   {
-    next unless $word =~ /\w/;
-    my @row = ( 'word', $self->source_filename, $self->line_number, $word );
-    $self->callback->(@row);
+    next unless $frag =~ /\w/;
+    $DB::single = 1;
+    if($frag =~ /^[a-z']+::([a-z']+(::[a-z']+)*)$/i)
+    {
+      my @row = ( 'module', $self->source_filename, $self->line_number, $frag );
+      $self->callback->(@row);
+    }
+    else
+    {
+      foreach my $word (split /\b{wb}/, $frag)
+      {
+        next unless $word =~ /\w/;
+        my @row = ( 'word', $self->source_filename, $self->line_number, $word );
+        $self->callback->(@row);
+      }
+    }
   }
 }
 
@@ -91,5 +104,3 @@ sub _handle_text ($self, $text)
 }
 
 1;
-
-
