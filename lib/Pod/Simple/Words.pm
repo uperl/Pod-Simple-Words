@@ -37,6 +37,7 @@ sub new ($class)
   my $self = $class->SUPER::new;
   $self->preserve_whitespace(1);
   $self->words([]);
+  $self->in_verbatim(0);
   $self;
 }
 

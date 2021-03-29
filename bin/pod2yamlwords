@@ -11,12 +11,43 @@ use YAML qw( Dump );
 # DESCRIPTION: Dump words from POD as YAML
 # VERSION
 
-my $filename = shift @ARGV;
+my $name = shift @ARGV;
+unless(defined $name)
+{
+  say STDERR "usage: $0 pod\n";
+  exit 1;
+}
+
+my $filename;
+if(-f $name)
+{
+  $filename = $name;
+}
+else
+{
+  my $path = join('/', split /::/, $name) . ".pm";
+  foreach my $try (map { join '/', $_, $path } @INC)
+  {
+    if(-f $try)
+    {
+      $filename = $try;
+      last;
+    }
+  }
+}
+
 unless(defined $filename)
 {
-  say STDERR "usage: $0 filename";
+  say STDERR "no file found for $name";
   exit 2;
 }
+
+unless(-f $filename && -r $filename)
+{
+  say STDERR "bad or unreadable file $filename";
+  exit 2;
+}
+
 
 my $parser = Pod::Simple::Words->new;
 $parser->parse_file($filename);
