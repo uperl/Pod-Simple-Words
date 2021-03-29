@@ -40,6 +40,7 @@ sub new ($class)
   $self->preserve_whitespace(1);
   $self->in_verbatim(0);
   $self->in_head1(0);
+  $self->no_errata_section(1);
   $self->accept_targets( qw( stopwords ));
   $self->target(undef);
   $self->callback(sub {
@@ -109,6 +110,20 @@ sub _add_words ($self, $line)
       }
     }
   }
+}
+
+sub whine ($self, $line, $complaint)
+{
+  my @row = ( 'error', $self->source_filename, $self->line_number, $complaint );
+  $self->callback->(@row);
+  $self->SUPER::whine($line, $complaint);
+}
+
+sub scream ($self, $line, $complaint)
+{
+  my @row = ( 'error', $self->source_filename, $self->line_number, $complaint );
+  $self->callback->(@row);
+  $self->SUPER::scream($line, $complaint);
 }
 
 sub _handle_text ($self, $text)

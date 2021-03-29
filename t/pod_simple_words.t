@@ -389,4 +389,46 @@ subtest 'links' => sub {
 
 };
 
+subtest 'errors' => sub {
+  my $pod = <<~'POD';
+    =head1 SEE ALSO
+
+    =over 4
+
+    =item one
+
+    =item two
+
+    =item three
+
+    =cut
+    POD
+
+  my $parser = Pod::Simple::Words->new;
+
+  my %actual;
+  my $errors;
+
+  $parser->callback(sub {
+    my($type, undef, undef, $word) = @_;
+    if($type eq 'word')
+    {
+      $actual{$word}++;
+    }
+    if($type eq 'error')
+    {
+      $errors++;
+    }
+  });
+
+  $parser->parse_string_document(encode('UTF-8', $pod, Encode::FB_CROAK));
+
+  is
+    \%actual,
+    { map { $_ => 1 } qw( see also one two three ) },
+  ;
+
+  ok $errors;
+};
+
 done_testing;
