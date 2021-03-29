@@ -43,6 +43,10 @@ sub new ($class)
 
 sub _handle_element_start ($self, $tagname, $attrhash, @)
 {
+  if($tagname eq 'L')
+  {
+    # TODO
+  }
   $self->line_number($attrhash->{start_line}) if defined $attrhash->{start_line};
   $self->in_verbatim($self->in_verbatim+1)    if $tagname eq 'Verbatim';
   ();
