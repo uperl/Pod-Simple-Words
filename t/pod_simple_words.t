@@ -431,4 +431,66 @@ subtest 'errors' => sub {
   ok $errors;
 };
 
+subtest 'para verbatim para' => sub {
+  my $pod = <<~'POD';
+    =head1 DESCRIPTION
+
+    one
+
+     say "hello world!\n"; # two
+
+    three
+
+    =cut
+    POD
+
+  my $parser = Pod::Simple::Words->new;
+
+  my %actual;
+
+  $parser->callback(sub {
+    my($type, undef, $ln, $word) = @_;
+    return unless $type eq 'word';
+    $actual{$word} = [$ln];
+  });
+
+  $parser->parse_string_document(encode('UTF-8', $pod, Encode::FB_CROAK));
+
+  is
+    \%actual,
+    { description => [1], one => [3], two => [5], three => [7] },
+  ;
+};
+
+subtest 'verbatim without comment' => sub {
+  my $pod = <<~'POD';
+    =head1 DESCRIPTION
+
+    one
+
+     say "hello world!\n";
+
+    two
+
+    =cut
+    POD
+
+  my $parser = Pod::Simple::Words->new;
+
+  my %actual;
+
+  $parser->callback(sub {
+    my($type, undef, $ln, $word) = @_;
+    return unless $type eq 'word';
+    $actual{$word} = [$ln];
+  });
+
+  $parser->parse_string_document(encode('UTF-8', $pod, Encode::FB_CROAK));
+
+  is
+    \%actual,
+    { description => [1], one => [3], two => [7] },
+  ;
+};
+
 done_testing;
