@@ -5,7 +5,6 @@ use warnings;
 use 5.022;
 use lib::findbin '../lib'; # dev-only
 use Pod::Simple::Words;
-use YAML qw( Dump );
 
 # PODNAME: pod2yamlwords
 # DESCRIPTION: Dump words from POD as YAML
@@ -51,5 +50,3 @@ unless(-f $filename && -r $filename)
 
 my $parser = Pod::Simple::Words->new;
 $parser->parse_file($filename);
-
-print Dump($parser->words);

@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use 5.022;
 use experimental qw( signatures postderef );
+use JSON::MaybeXS qw( encode_json );
 use base qw( Pod::Simple );
 
 # ABSTRACT: Parse words and locations from a POD document
@@ -21,7 +22,7 @@ The intention is to feed this into a spell checker.
 =cut
 
 __PACKAGE__->_accessorize(
-  qw( line_number in_verbatim words ),
+  qw( line_number in_verbatim callback ),
 );
 
 =head1 CONSTRUCTOR
@@ -36,7 +37,10 @@ sub new ($class)
 {
   my $self = $class->SUPER::new;
   $self->preserve_whitespace(1);
-  $self->words([]);
+  $self->callback(sub {
+    my $row = encode_json \@_;
+    print "--- $row\n";
+  });
   $self->in_verbatim(0);
   $self;
 }
@@ -62,7 +66,8 @@ sub _add_words ($self, $line)
   foreach my $word (split /\b{wb}/, $line)
   {
     next unless $word =~ /\w/;
-    push $self->words->@*, [ $self->source_filename, $self->line_number, $word ];
+    my @row = ( 'word', $self->source_filename, $self->line_number, $word );
+    $self->callback->(@row);
   }
 }
 

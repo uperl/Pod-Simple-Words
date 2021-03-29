@@ -1,15 +1,48 @@
 use Test2::V0 -no_srand => 1;
 use Pod::Simple::Words;
-use YAML qw( Dump );
+use Path::Tiny qw( path );
+
 
 subtest 'basic' => sub {
 
   my $parser = Pod::Simple::Words->new;
   isa_ok 'Pod::Simple::Words';
   isa_ok 'Pod::Simple';
-  $parser->parse_file('corpus/Foo.pm');
 
-  note Dump($parser->words);
+  my %actual;
+
+  $parser->callback(sub {
+    my($type, $file, $ln, $word) = @_;
+    next unless $type eq 'word';
+    ok -f $file;
+    $actual{$word} = {
+      file => path($file)->basename,
+      ln   => $ln,
+    }
+  });
+
+  $parser->parse_file('corpus/Basic.pod');
+
+  is
+    \%actual,
+    hash {
+      field DESCRIPTION => hash {
+        field file => 'Basic.pod';
+        field ln   => 1;
+        end;
+      };
+      field very => hash {
+        field file => 'Basic.pod';
+        field ln   => 3;
+        end;
+      };
+      field basic => hash {
+        field file => 'Basic.pod';
+        field ln   => 3;
+        end;
+      };
+    },
+  ;
 
 };
 

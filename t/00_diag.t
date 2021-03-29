@@ -10,10 +10,14 @@ my %modules;
 my $post_diag;
 
 $modules{$_} = $_ for qw(
+  Cpanel::JSON::XS
   ExtUtils::MakeMaker
+  JSON::MaybeXS
+  JSON::PP
+  JSON::XS
+  Path::Tiny
   Test2::V0
   Test::Script
-  YAML
 );
 
 
