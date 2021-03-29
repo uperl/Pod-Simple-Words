@@ -5,6 +5,7 @@ use warnings;
 use 5.026;
 use experimental qw( signatures );
 use JSON::MaybeXS qw( encode_json );
+use PPI;
 use base qw( Pod::Simple );
 
 # ABSTRACT: Parse words and locations from a POD document
@@ -22,7 +23,7 @@ The intention is to feed this into a spell checker.
 =cut
 
 __PACKAGE__->_accessorize(
-  qw( line_number in_verbatim callback ),
+  qw( line_number in_verbatim callback target ),
 );
 
 =head1 CONSTRUCTOR
@@ -37,11 +38,13 @@ sub new ($class)
 {
   my $self = $class->SUPER::new;
   $self->preserve_whitespace(1);
+  $self->in_verbatim(0);
+  $self->accept_targets( qw( stopwords ));
+  $self->target(undef);
   $self->callback(sub {
     my $row = encode_json \@_;
     print "--- $row\n";
   });
-  $self->in_verbatim(0);
   $self;
 }
 
@@ -51,6 +54,10 @@ sub _handle_element_start ($self, $tagname, $attrhash, @)
   {
     # TODO
   }
+  elsif($tagname eq 'for')
+  {
+    $self->target($attrhash->{target});
+  }
   $self->line_number($attrhash->{start_line}) if defined $attrhash->{start_line};
   $self->in_verbatim($self->in_verbatim+1)    if $tagname eq 'Verbatim';
   ();
@@ -58,7 +65,14 @@ sub _handle_element_start ($self, $tagname, $attrhash, @)
 
 sub _handle_element_end ($self, $tagname, @)
 {
-  $self->in_verbatim($self->in_verbatim-1) if $tagname eq 'Verbatim';
+  if($tagname eq 'Verbatim')
+  {
+    $self->in_verbatim($self->in_verbatim-1) if $tagname eq 'Verbatim';
+  }
+  elsif($tagname eq 'for')
+  {
+    $self->target(undef);
+  }
 }
 
 sub _add_words ($self, $line)
@@ -85,9 +99,27 @@ sub _add_words ($self, $line)
 
 sub _handle_text ($self, $text)
 {
-  if($self->in_verbatim)
+  if($self->target)
   {
-    # TODO: parse comments only
+    if($self->target eq 'stopwords')
+    {
+      foreach my $word (split /\b{wb}/, $text)
+      {
+        next unless $word =~ /\w/;
+        my @row = ( 'stopword', $self->source_filename, $self->line_number, $word );
+        $self->callback->(@row);
+      }
+    }
+  }
+  elsif($self->in_verbatim)
+  {
+    my $base_line = $self->line_number;
+    my $doc = PPI::Document->new(\$text);
+    foreach my $comment ($doc->find('PPI::Token::Comment')->@*)
+    {
+      $self->line_number($base_line + $comment->location->[0] - 1);
+      $self->_add_words("$comment");
+    }
   }
   else
   {

@@ -15,6 +15,7 @@ $modules{$_} = $_ for qw(
   JSON::MaybeXS
   JSON::PP
   JSON::XS
+  PPI
   Path::Tiny
   Test2::V0
   Test::Script
