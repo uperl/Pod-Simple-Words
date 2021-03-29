@@ -222,12 +222,15 @@ subtest 'stop words' => sub {
 
   my $parser = Pod::Simple::Words->new;
 
+  my %stop;
   my %actual;
 
   $parser->callback(sub {
     my($type, undef, undef, $word) = @_;
-    return unless $type eq 'word';
-    $actual{$word}++;
+    if($type eq 'word')
+    { $actual{$word}++ }
+    elsif($type eq 'stopword')
+    { $stop{$word}++ }
   });
 
   $parser->parse_string_document(encode('UTF-8', $pod, Encode::FB_CROAK));
@@ -239,6 +242,11 @@ subtest 'stop words' => sub {
       field 'huh' => 1;
       end;
     },
+  ;
+
+  is
+    \%stop,
+    { frooble => 1, dabbo => 1, 'Привет' => 1 },
   ;
 
 };
