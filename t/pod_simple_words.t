@@ -88,7 +88,7 @@ subtest 'unicode' => sub {
 
 };
 
-subtest 'apostrophy' => sub {
+subtest 'apostrophe' => sub {
 
   my $pod = <<~'POD';
     =encoding utf8
@@ -125,7 +125,7 @@ subtest 'apostrophy' => sub {
 
 };
 
-subtest 'module apostrophy' => sub {
+subtest 'module apostrophe' => sub {
 
   my $pod = <<~'POD';
     =encoding utf8
@@ -197,6 +197,133 @@ subtest 'module' => sub {
       field 'YAML::XS' => 1;
       field 'Foo::Bar::Baz' => 1;
       end;
+    },
+  ;
+
+};
+
+subtest 'stop words' => sub {
+  my $pod = <<~'POD';
+    =encoding utf8
+
+    =begin stopwords
+
+    frooble dabbo Привет
+
+    =end stopwords
+
+    =head1 DESCRIPTION
+
+    huh
+
+    =cut
+    POD
+
+
+  my $parser = Pod::Simple::Words->new;
+
+  my %actual;
+
+  $parser->callback(sub {
+    my($type, undef, undef, $word) = @_;
+    return unless $type eq 'word';
+    $actual{$word}++;
+  });
+
+  $parser->parse_string_document(encode('UTF-8', $pod, Encode::FB_CROAK));
+
+  is
+    \%actual,
+    hash {
+      field 'DESCRIPTION' => 1;
+      field 'huh' => 1;
+      end;
+    },
+  ;
+
+};
+
+subtest 'stop words (just for) ' => sub {
+  my $pod = <<~'POD';
+    =encoding utf8
+
+    =for stopwords frooble dabbo Привет
+
+    =head1 DESCRIPTION
+
+    huh
+
+    =cut
+    POD
+
+
+  my $parser = Pod::Simple::Words->new;
+
+  my %actual;
+  my %stop;
+
+  $parser->callback(sub {
+    my($type, undef, undef, $word) = @_;
+    if($type eq 'word')
+    { $actual{$word}++ }
+    elsif($type eq 'stopword')
+    { $stop{$word}++ }
+  });
+
+  $parser->parse_string_document(encode('UTF-8', $pod, Encode::FB_CROAK));
+
+  is
+    \%actual,
+    hash {
+      field 'DESCRIPTION' => 1;
+      field 'huh' => 1;
+      end;
+    },
+  ;
+
+  is
+    \%stop,
+    { frooble => 1, dabbo => 1, 'Привет' => 1 },
+  ;
+
+};
+
+subtest 'comments in verbatim block' => sub {
+  my $pod = <<~'POD';
+    =encoding utf8
+
+    =head1 NAME
+
+    Foo::Bar::Baz - A Thing
+
+    =head1 SYNOPSIS
+
+     use strict;
+     use warnings;
+     say "Hello world!" # comment one
+     exit;              # comment two
+
+    =cut
+    POD
+
+
+  my $parser = Pod::Simple::Words->new;
+
+  my %actual;
+
+  $parser->callback(sub {
+    my($type, undef, $ln, $word) = @_;
+    return unless $type eq 'word';
+    push $actual{$word}->@*, $ln;
+  });
+
+  $parser->parse_string_document(encode('UTF-8', $pod, Encode::FB_CROAK));
+
+  is
+    \%actual,
+    {
+      A => [5], NAME => [3], SYNOPSIS => [7], Thing => [5],
+      comment => [11,12], one => [11], two => [12],
     },
   ;
 
