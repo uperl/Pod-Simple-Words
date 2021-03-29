@@ -23,7 +23,7 @@ The intention is to feed this into a spell checker.
 =cut
 
 __PACKAGE__->_accessorize(
-  qw( line_number in_verbatim callback target ),
+  qw( line_number in_verbatim in_head1 callback target ),
 );
 
 =head1 CONSTRUCTOR
@@ -39,6 +39,7 @@ sub new ($class)
   my $self = $class->SUPER::new;
   $self->preserve_whitespace(1);
   $self->in_verbatim(0);
+  $self->in_head1(0);
   $self->accept_targets( qw( stopwords ));
   $self->target(undef);
   $self->callback(sub {
@@ -60,6 +61,7 @@ sub _handle_element_start ($self, $tagname, $attrhash, @)
   }
   $self->line_number($attrhash->{start_line}) if defined $attrhash->{start_line};
   $self->in_verbatim($self->in_verbatim+1)    if $tagname eq 'Verbatim';
+  $self->in_head1($self->in_head1+1)          if $tagname eq 'head1';
   ();
 }
 
@@ -67,7 +69,11 @@ sub _handle_element_end ($self, $tagname, @)
 {
   if($tagname eq 'Verbatim')
   {
-    $self->in_verbatim($self->in_verbatim-1) if $tagname eq 'Verbatim';
+    $self->in_verbatim($self->in_verbatim-1);
+  }
+  elsif($tagname eq 'head1')
+  {
+    $self->in_head1($self->in_head1-1);
   }
   elsif($tagname eq 'for')
   {
@@ -123,6 +129,7 @@ sub _handle_text ($self, $text)
   }
   else
   {
+    $text = lc $text if $self->in_head1;
     while($text =~ /^(.*?)\r?\n(.*)$/)
     {
       $text = $2;
