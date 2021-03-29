@@ -2,6 +2,25 @@
 
 Parse words and locations from a POD document
 
+# SYNOPSIS
+
+```
+# TODO
+```
+
+# DESCRIPTION
+
+This [Pod::Simple](https://metacpan.org/pod/Pod::Simple) parser extracts words from POD, with location information.
+The intention is to feed this into a spell checker.
+
+# CONSTRUCTOR
+
+## new
+
+```perl
+my $parser = Pod::Simple::Words->new;
+```
+
 # AUTHOR
 
 Graham Ollis <plicease@cpan.org>
