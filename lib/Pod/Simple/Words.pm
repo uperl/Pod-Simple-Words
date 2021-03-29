@@ -248,7 +248,7 @@ sub _handle_text ($self, $text)
   {
     my $base_line = $self->line_number;
     my $doc = PPI::Document->new(\$text);
-    foreach my $comment ($doc->find('PPI::Token::Comment')->@*)
+    foreach my $comment (($doc->find('PPI::Token::Comment') || [])->@*)
     {
       $self->line_number($base_line + $comment->location->[0] - 1);
       $self->_add_words("$comment");
