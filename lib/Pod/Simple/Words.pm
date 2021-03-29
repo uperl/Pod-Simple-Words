@@ -66,8 +66,7 @@ sub _add_words ($self, $line)
   foreach my $frag (split /\s/, $line)
   {
     next unless $frag =~ /\w/;
-    $DB::single = 1;
-    if($frag =~ /^[a-z']+::([a-z']+(::[a-z']+)*)$/i)
+    if($frag =~ /^[a-z]+::([a-z]+(::[a-z]+)*('s)?)$/i)
     {
       my @row = ( 'module', $self->source_filename, $self->line_number, $frag );
       $self->callback->(@row);

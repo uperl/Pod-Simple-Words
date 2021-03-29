@@ -125,6 +125,38 @@ subtest 'apostrophy' => sub {
 
 };
 
+subtest 'module apostrophy' => sub {
+
+  my $pod = <<~'POD';
+    =encoding utf8
+
+    =head1 DESCRIPTION
+
+    Foo::Bar::Baz's Test.
+
+    =cut
+    POD
+
+
+  my $parser = Pod::Simple::Words->new;
+
+  my %actual;
+
+  $parser->callback(sub {
+    my($type, undef, undef, $word) = @_;
+    return unless $type eq 'module';
+    $actual{$word}++;
+  });
+
+  $parser->parse_string_document(encode('UTF-8', $pod, Encode::FB_CROAK));
+
+  is
+    \%actual,
+    { "Foo::Bar::Baz's" => 1 },
+  ;
+
+};
+
 subtest 'module' => sub {
 
   my $pod = <<~'POD';
