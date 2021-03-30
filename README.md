@@ -119,6 +119,19 @@ This defines the callback when the specific input items are found.  Types:
     An error that was detected during parsing.  This allows the spell checker
     to check the correctness of the POD at the same time if it so chooses.
 
+# METHODS
+
+## skip\_sections
+
+```
+$parser->skip_sections(@sections);
+```
+
+Skip the given `=head1` level sections.  Note that words from the section header
+itself will be included, but the content of the section will not.  This is useful
+for skipping `CONTRIBUTOR` or similar sections which are usually mostly names and
+shouldn't be spell checked against a human language dictionary.
+
 # SEE ALSO
 
 - [Pod::Spell](https://metacpan.org/pod/Pod::Spell)

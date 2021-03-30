@@ -82,7 +82,7 @@ set.
 =cut
 
 __PACKAGE__->_accessorize(
-  qw( line_number in_verbatim in_head1 callback target ),
+  qw( line_number in_verbatim in_head1 callback target head1 skip ),
 );
 
 =head1 CONSTRUCTOR
@@ -144,14 +144,34 @@ sub new ($class)
   $self->preserve_whitespace(1);
   $self->in_verbatim(0);
   $self->in_head1(0);
+  $self->head1('');
   $self->no_errata_section(1);
   $self->accept_targets( qw( stopwords ));
   $self->target(undef);
+  $self->skip({});
   $self->callback(sub {
     my $row = encode_json \@_;
     print "--- $row\n";
   });
   $self;
+}
+
+=head1 METHODS
+
+=head2 skip_sections
+
+ $parser->skip_sections(@sections);
+
+Skip the given C<=head1> level sections.  Note that words from the section header
+itself will be included, but the content of the section will not.  This is useful
+for skipping C<CONTRIBUTOR> or similar sections which are usually mostly names and
+shouldn't be spell checked against a human language dictionary.
+
+=cut
+
+sub skip_sections ($self, @sections)
+{
+  $self->skip->{lc $_} = 1 for @sections;
 }
 
 sub _handle_element_start ($self, $tagname, $attrhash, @)
@@ -174,6 +194,7 @@ sub _handle_element_start ($self, $tagname, $attrhash, @)
   elsif($tagname eq 'head1')
   {
     $self->in_head1($self->in_head1+1);
+    $self->head1('');
   }
   ();
 }
@@ -232,6 +253,14 @@ sub scream ($self, $line, $complaint)
 
 sub _handle_text ($self, $text)
 {
+  if($self->in_head1)
+  {
+    $self->head1(lc $text);
+  }
+  else
+  {
+    return if $self->skip->{$self->head1};
+  }
   if($self->target)
   {
     if($self->target eq 'stopwords')
