@@ -1,6 +1,7 @@
 Revision history for {{$dist->name}}},
 
 {{$NEXT}}
+  - Add skip_sections method (gh#2)
 
 0.01      2021-03-29 16:39:44 -0600
   - initial version

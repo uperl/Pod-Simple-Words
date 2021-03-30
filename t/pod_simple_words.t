@@ -493,4 +493,48 @@ subtest 'verbatim without comment' => sub {
   ;
 };
 
+subtest 'skip section' => sub {
+  my $pod = <<~'POD';
+    =head1 DESCRIPTION
+
+    one
+
+    =head1 CONTRIBUTORS
+
+    foo bar baz
+
+    =head1 SEE ALSO
+
+    =over 4
+
+    =item two
+
+    =item three
+
+    =item four
+
+    =back
+
+    =cut
+    POD
+
+  my $parser = Pod::Simple::Words->new;
+  $parser->skip_sections('contributors');
+
+  my %actual;
+
+  $parser->callback(sub {
+    my($type, undef, $ln, $word) = @_;
+    return unless $type eq 'word';
+    $actual{$word} = [$ln];
+  });
+
+  $parser->parse_string_document(encode('UTF-8', $pod, Encode::FB_CROAK));
+
+  is
+    \%actual,
+    { description => [1], one => [3], contributors => [5], see => [9], also => [9], two => [13], three => [15], four => [17] },
+  ;
+};
+
 done_testing;
