@@ -4,7 +4,6 @@ use utf8;
 use Pod::Simple::Words;
 use Path::Tiny qw( path );
 use Encode qw( encode );
-use YAML qw( Dump );
 
 subtest 'basic' => sub {
 
@@ -427,7 +426,7 @@ subtest 'link / text same' => sub {
   is
     \@links,
     [[ 'url_link', 3, 'https://metacpan.org' ]],
-  or diag Dump(\@links);
+  ;
 
 };
 
@@ -476,7 +475,7 @@ subtest 'bare links' => sub {
       [ 'url_link', 5, 'ftp://user:password@bar.test/path' ],
       [ 'url_link', 7, 'mailto:roger@test' ],
     ],
-  or diag Dump(\@links);
+  ;
 
 };
 
