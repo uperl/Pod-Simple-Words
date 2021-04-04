@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}},
 
 {{$NEXT}}
+  - Fix bug: bare links were not correctly being returned as
+    array reference (gh#7)
 
 0.05      2021-04-04 15:08:19 -0600
   - Added section events (gh#6)

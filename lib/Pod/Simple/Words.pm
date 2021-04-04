@@ -299,7 +299,14 @@ sub _add_words ($self, $line)
     elsif($frag =~ /^[a-z]+:\/\//i
     || $frag =~ /^(file|ftps?|gopher|https?|ldapi|ldaps|mailto|mms|news|nntp|nntps|pop|rlogin|rtsp|sftp|snew|ssh|telnet|tn3270|urn|wss?):\S/i)
     {
-      my @row = ( 'url_link', $self->source_filename, $self->line_number, $frag );
+      my @row = ( 'url_link', $self->source_filename, $self->line_number, [undef,undef] );
+      my $url = URI->new($frag);
+      if(defined $url->fragment)
+      {
+        $row[3]->[1] = $url->fragment;
+        $url->fragment(undef);
+      }
+      $row[3]->[0] = "$url";
       $self->callback->(@row);
     }
     else
