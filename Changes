@@ -1,6 +1,7 @@
 Revision history for {{$dist->name}}},
 
 {{$NEXT}}
+  - Added section events (gh#6)
 
 0.04      2021-04-04 11:49:06 -0600
   - Breaking change: links are provided as a array ref pair,

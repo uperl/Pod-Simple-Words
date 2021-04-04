@@ -42,6 +42,10 @@ $parser->callback(sub {
     # $manname is the MAN document
     # $section is the section      (can be undef)
   }
+  elsif($type eq 'section')
+  {
+    # $input is the name of a documentation section
+  }
   elsif($type eq 'error')
   {
     # $input is a POD error
@@ -148,6 +152,12 @@ This defines the callback when the specific input items are found.  Types:
     A link to a UNIX man page.  The `$manname` is the name of the man page.
     The `$section` is the section of the man page to link to, which will be
     `undef` if not linking to a specific section.
+
+- section
+
+    A section inside of the current document which can be linked to externally
+    or internally.  This is usually the title of a header like `=head1`, `=head2`,
+    etc.
 
 - error
 
