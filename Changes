@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}},
 
 {{$NEXT}}
+
+0.04      2021-04-04 11:49:06 -0600
   - Breaking change: links are provided as a array ref pair,
     the first being the URL/podname/manname and the second
     being the fragment/section to link to.  Either can be
