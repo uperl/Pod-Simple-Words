@@ -26,11 +26,21 @@ $parser->callback(sub {
   }
   elsif($type eq 'url_link')
   {
-    # $input is a URL (eg https://metacpan.org)
+    my($url, $section) = @$input;
+    # $url     is the URL without section / fragment
+    # $section is the fragment /section (can be undef)
   }
   elsif($type eq 'pod_link')
   {
-    # $input is a link to POD (eg L<FFI::Platypus>)
+    my($podname, $section) = @$input;
+    # $podname is the POD document (undef for current)
+    # $section is the section      (can be undef)
+  }
+  elsif($type eq 'man_link')
+  {
+    my($manname, $section) = @$input;
+    # $manname is the MAN document
+    # $section is the section      (can be undef)
   }
   elsif($type eq 'error')
   {
@@ -108,11 +118,36 @@ This defines the callback when the specific input items are found.  Types:
 
 - url\_link
 
-    A regular internet URL link.
+    ```perl
+    my($url, $fragment) = @$input;
+    ```
+
+    A regular internet URL link.  The `$url` is the base URL without any
+    fragment section navigation added.  The `$fragment` is the URL fragment or
+    section of the document to link to.  The `$fragment` will be `undef` if the
+    URL has no fragment.
 
 - pod\_link
 
-    A link to another POD document.  Usually a module or a script.
+    ```perl
+    my($podname, $section) = @$input;
+    ```
+
+    A link to another POD document.  Usually a module or a script.  The
+    `$podname` is the name of the pod document to link to.  If this is
+    `undef`, it means that the link is to a section inside the current
+    document.  The `$section` is the section of the document to link to.
+    The `$section` will be `undef` if not linking to a specific section.
+
+- man\_link
+
+    ```perl
+    my($manname, $section) = @$input;
+    ```
+
+    A link to a UNIX man page.  The `$manname` is the name of the man page.
+    The `$section` is the section of the man page to link to, which will be
+    `undef` if not linking to a specific section.
 
 - error
 

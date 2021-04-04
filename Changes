@@ -1,6 +1,10 @@
 Revision history for {{$dist->name}}},
 
 {{$NEXT}}
+  - Breaking change: links are provided as a array ref pair,
+    the first being the URL/podname/manname and the second
+    being the fragment/section to link to.  Either can be
+    undef depending.  (gh#5)
 
 0.03      2021-04-04 06:42:28 -0600
   - Link parsing improvements to reduce false negatives (gh#3)

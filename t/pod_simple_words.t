@@ -383,10 +383,53 @@ subtest 'links' => sub {
   is
     \@links,
     [
-      [ pod_link => 5,  'FFI::Platypus'      ],
-      [ url_link => 7,  'https://google.com' ],
-      [ pod_link => 9,  'pod2yamlwords'      ],
-      [ man_link => 11, 'foo(2)'             ],
+      [ pod_link => 5,  ['FFI::Platypus',      undef ]],
+      [ url_link => 7,  ['https://google.com', undef ]],
+      [ pod_link => 9,  ['pod2yamlwords',      undef ]],
+      [ man_link => 11, ['foo(2)',             undef ]],
+    ],
+  ;
+
+};
+
+subtest 'link sections' => sub {
+  my $pod = <<~'POD';
+    =over 4
+
+    =item L<FFI::Platypus/find_lib>
+
+    =item L</foo>
+
+    =item L<https://metacpan.org/pod/FFI::Platypus#find_lib>
+
+    =item L<foo(2)/bar>
+
+    =back
+
+    =cut
+    POD
+
+  my $parser = Pod::Simple::Words->new;
+
+  my @links;
+
+  $parser->callback(sub {
+    my($type, undef, $ln, $word) = @_;
+    if($type =~ /_link$/)
+    {
+      push @links, [$type, $ln, $word];
+    }
+  });
+
+  $parser->parse_string_document(encode('UTF-8', $pod, Encode::FB_CROAK));
+
+  is
+    \@links,
+    [
+      [ pod_link => 3,  [ 'FFI::Platypus',                          'find_lib' ]],
+      [ pod_link => 5,  [ undef,                                    'foo'      ]],
+      [ url_link => 7,  [ 'https://metacpan.org/pod/FFI::Platypus', 'find_lib' ]],
+      [ man_link => 9,  [ 'foo(2)',                                 'bar'      ]],
     ],
   ;
 
@@ -428,7 +471,7 @@ subtest 'link / text same' => sub {
 
   is
     \@links,
-    [[ 'url_link', 3, 'https://metacpan.org' ]],
+    [[ 'url_link', 3, ['https://metacpan.org',undef] ]],
   ;
 
 };
