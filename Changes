@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}},
 
 {{$NEXT}}
+
+0.05      2021-04-04 15:08:19 -0600
   - Added section events (gh#6)
 
 0.04      2021-04-04 11:49:06 -0600
