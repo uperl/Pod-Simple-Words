@@ -4,6 +4,7 @@ use utf8;
 use Pod::Simple::Words;
 use Path::Tiny qw( path );
 use Encode qw( encode );
+use YAML qw( Dump );
 
 subtest 'basic' => sub {
 
@@ -347,7 +348,7 @@ subtest 'links' => sub {
 
     =item L<the google|https://google.com>
 
-    =item L<pod2yamlwords>
+    =item L<the script|pod2yamlwords>
 
     =back
 
@@ -375,7 +376,7 @@ subtest 'links' => sub {
 
   is
     \%actual,
-    { map { $_ => 1 } qw( see also some text the google pod2yamlwords ) },
+    { the => 2, map { $_ => 1 } qw( see also some text google script ) },
   ;
 
   is
@@ -386,6 +387,47 @@ subtest 'links' => sub {
       [ pod_link => 9, 'pod2yamlwords'      ],
     ],
   ;
+
+};
+
+subtest 'link / text same' => sub {
+  my $pod = <<~'POD';
+    =over 4
+
+    =item L<https://metacpan.org>
+
+    =back
+    POD
+
+  my $parser = Pod::Simple::Words->new;
+
+  my %actual;
+  my @links;
+
+  $parser->callback(sub {
+    my($type, undef, $ln, $word) = @_;
+    note "$type $word";
+    if($type eq 'word')
+    {
+      $actual{$word}++;
+    }
+    elsif($type =~ /_link$/)
+    {
+      push @links, [$type, $ln, $word];
+    }
+  });
+
+  $parser->parse_string_document(encode('UTF-8', $pod, Encode::FB_CROAK));
+
+  is
+    \%actual,
+    {},
+  ;
+
+  is
+    \@links,
+    [[ 'url_link', 3, 'https://metacpan.org' ]],
+  or diag Dump(\@links);
 
 };
 

@@ -14,12 +14,12 @@ use base qw( Pod::Simple );
 =head1 SYNOPSIS
 
  use Pod::Simple::Words;
-
+ 
  my $parser = Pod::Simple::Words->new;
-
+ 
  $parser->callback(sub {
    my($type, $filename, $line, $input) = @_;
-
+ 
    if($type eq 'word')
    {
      # $input is human language word
@@ -45,7 +45,7 @@ use base qw( Pod::Simple );
      # $input is a POD error
    }
  });
-
+ 
  $parser->parse_file('lib/Foo.pm');
 
 =head1 DESCRIPTION
@@ -82,7 +82,7 @@ set.
 =cut
 
 __PACKAGE__->_accessorize(
-  qw( line_number in_verbatim in_head1 callback target head1 skip ),
+  qw( line_number in_verbatim in_head1 callback target head1 skip link_address ),
 );
 
 =head1 CONSTRUCTOR
@@ -182,6 +182,7 @@ sub _handle_element_start ($self, $tagname, $attrhash, @)
   {
     my @row = ( $attrhash->{type} . "_link", $self->source_filename, $self->line_number, $attrhash->{to}.'' );
     $self->callback->(@row);
+    $self->link_address($attrhash->{to});
   }
   elsif($tagname eq 'for')
   {
@@ -212,6 +213,10 @@ sub _handle_element_end ($self, $tagname, @)
   elsif($tagname eq 'for')
   {
     $self->target(undef);
+  }
+  elsif($tagname eq 'L')
+  {
+    $self->link_address(undef);
   }
 }
 
@@ -253,6 +258,11 @@ sub scream ($self, $line, $complaint)
 
 sub _handle_text ($self, $text)
 {
+  if(defined $self->link_address && $self->link_address eq $text)
+  {
+    return;
+  }
+
   if($self->in_head1)
   {
     $self->head1(lc $text);
