@@ -2,6 +2,9 @@ Revision history for {{$dist->name}}},
 
 {{$NEXT}}
 
+0.03      2021-04-04 06:42:28 -0600
+  - Link parsing improvements to reduce false negatives (gh#3)
+
 0.02      2021-03-30 10:13:20 -0600
   - Add skip_sections method (gh#2)
 
