@@ -431,6 +431,55 @@ subtest 'link / text same' => sub {
 
 };
 
+subtest 'bare links' => sub {
+  my $pod = <<~'POD';
+    =head1 DESCRIPTION
+
+    http://foo.test/path#baz
+
+    ftp://user:password@bar.test/path
+
+    mailto:roger@test
+
+    =cut
+    POD
+
+  my $parser = Pod::Simple::Words->new;
+
+  my %actual;
+  my @links;
+
+  $parser->callback(sub {
+    my($type, undef, $ln, $word) = @_;
+    note "$type $word";
+    if($type eq 'word')
+    {
+      $actual{$word}++;
+    }
+    elsif($type =~ /_link$/)
+    {
+      push @links, [$type, $ln, $word];
+    }
+  });
+
+  $parser->parse_string_document(encode('UTF-8', $pod, Encode::FB_CROAK));
+
+  is
+    \%actual,
+    { description => 1 },
+  ;
+
+  is
+    \@links,
+    [
+      [ 'url_link', 3, 'http://foo.test/path#baz' ],
+      [ 'url_link', 5, 'ftp://user:password@bar.test/path' ],
+      [ 'url_link', 7, 'mailto:roger@test' ],
+    ],
+  or diag Dump(\@links);
+
+};
+
 subtest 'errors' => sub {
   my $pod = <<~'POD';
     =head1 SEE ALSO
