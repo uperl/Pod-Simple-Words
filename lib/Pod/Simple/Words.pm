@@ -51,6 +51,10 @@ use base qw( Pod::Simple );
      # $manname is the MAN document
      # $section is the section      (can be undef)
    }
+   elsif($type eq 'section')
+   {
+     # $input is the name of a documentation section
+   }
    elsif($type eq 'error')
    {
      # $input is a POD error
@@ -93,7 +97,7 @@ set.
 =cut
 
 __PACKAGE__->_accessorize(
-  qw( line_number in_verbatim in_head1 callback target head1 skip link_address ),
+  qw( line_number in_verbatim in_head1 callback target head1 skip link_address in_section_title ),
 );
 
 =head1 CONSTRUCTOR
@@ -159,6 +163,12 @@ A link to a UNIX man page.  The C<$manname> is the name of the man page.
 The C<$section> is the section of the man page to link to, which will be
 C<undef> if not linking to a specific section.
 
+=item section
+
+A section inside of the current document which can be linked to externally
+or internally.  This is usually the title of a header like C<=head1>, C<=head2>,
+etc.
+
 =item error
 
 An error that was detected during parsing.  This allows the spell checker
@@ -174,6 +184,7 @@ sub new ($class)
   $self->preserve_whitespace(1);
   $self->in_verbatim(0);
   $self->in_head1(0);
+  $self->in_section_title(0);
   $self->head1('');
   $self->no_errata_section(1);
   $self->accept_targets( qw( stopwords ));
@@ -241,6 +252,11 @@ sub _handle_element_start ($self, $tagname, $attrhash, @)
   {
     $self->in_head1($self->in_head1+1);
     $self->head1('');
+    $self->in_section_title(1);
+  }
+  elsif($tagname =~ /^head[0-9]+$/)
+  {
+    $self->in_section_title(1);
   }
   ();
 }
@@ -254,6 +270,11 @@ sub _handle_element_end ($self, $tagname, @)
   elsif($tagname eq 'head1')
   {
     $self->in_head1($self->in_head1-1);
+    $self->in_section_title(0);
+  }
+  elsif($tagname =~ /^head[0-9]+$/)
+  {
+    $self->in_section_title(0);
   }
   elsif($tagname eq 'for')
   {
@@ -310,6 +331,12 @@ sub scream ($self, $line, $complaint)
 sub _handle_text ($self, $text)
 {
   return if defined $self->link_address && $self->link_address eq $text;
+
+  if($self->in_section_title)
+  {
+    my @row = ( 'section', $self->source_filename, $self->line_number, $text );
+    $self->callback->(@row);
+  }
 
   if($self->in_head1)
   {

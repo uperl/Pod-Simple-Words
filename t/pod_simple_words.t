@@ -673,4 +673,61 @@ subtest 'skip section' => sub {
   ;
 };
 
+subtest 'section events' => sub {
+  my $pod = <<~'POD';
+    =head1 DESCRIPTION
+
+    foo bar baz
+
+    =head1 METHODS
+
+    blah blah blah
+
+    =head2 method1
+
+    blah blah blah
+
+    =head2 method2
+
+    blah blah blah
+
+    =over 4
+
+    =item xor nop or
+
+    =item what now?
+
+    =back
+
+    =head2 method3
+
+    blah blah
+
+    =cut
+    POD
+
+  my $parser = Pod::Simple::Words->new;
+
+  my @sections;
+
+  $parser->callback(sub {
+    my($type, undef, $ln, $word) = @_;
+    return unless $type eq 'section';
+    push @sections, [$type, $ln, $word];
+  });
+
+  $parser->parse_string_document(encode('UTF-8', $pod, Encode::FB_CROAK));
+
+  is
+    \@sections,
+    [
+      [ 'section', 1,  'DESCRIPTION' ],
+      [ 'section', 5,  'METHODS'     ],
+      [ 'section', 9,  'method1'     ],
+      [ 'section', 13, 'method2',    ],
+      [ 'section', 25, 'method3',    ],
+    ],
+  ;
+};
+
 done_testing;
