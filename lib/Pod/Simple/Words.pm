@@ -40,6 +40,10 @@ use base qw( Pod::Simple );
    {
      # $input is a link to POD (eg L<FFI::Platypus>)
    }
+   elsif($type eq 'man_link')
+   {
+     # $input is a manpage (eg perl(1))
+   }
    elsif($type eq 'error')
    {
      # $input is a POD error
@@ -128,6 +132,10 @@ A regular internet URL link.
 =item pod_link
 
 A link to another POD document.  Usually a module or a script.
+
+=item man_link
+
+A link to a UNIX man page.
 
 =item error
 

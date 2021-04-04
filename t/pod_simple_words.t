@@ -349,6 +349,8 @@ subtest 'links' => sub {
 
     =item L<the script|pod2yamlwords>
 
+    =item L<the manpage|foo(2)>
+
     =back
 
     =cut
@@ -375,15 +377,16 @@ subtest 'links' => sub {
 
   is
     \%actual,
-    { the => 2, map { $_ => 1 } qw( see also some text google script ) },
+    { the => 3, map { $_ => 1 } qw( see also some text google script manpage ) },
   ;
 
   is
     \@links,
     [
-      [ pod_link => 5, 'FFI::Platypus'      ],
-      [ url_link => 7, 'https://google.com' ],
-      [ pod_link => 9, 'pod2yamlwords'      ],
+      [ pod_link => 5,  'FFI::Platypus'      ],
+      [ url_link => 7,  'https://google.com' ],
+      [ pod_link => 9,  'pod2yamlwords'      ],
+      [ man_link => 11, 'foo(2)'             ],
     ],
   ;
 
