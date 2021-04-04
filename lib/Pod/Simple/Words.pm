@@ -230,6 +230,12 @@ sub _add_words ($self, $line)
       my @row = ( 'module', $self->source_filename, $self->line_number, $frag );
       $self->callback->(@row);
     }
+    elsif($frag =~ /^[a-z]+:\/\//i
+    || $frag =~ /^(file|ftps?|gopher|https?|ldapi|ldaps|mailto|mms|news|nntp|nntps|pop|rlogin|rtsp|sftp|snew|ssh|telnet|tn3270|urn|wss?):\S/i)
+    {
+      my @row = ( 'url_link', $self->source_filename, $self->line_number, $frag );
+      $self->callback->(@row);
+    }
     else
     {
       foreach my $word (split /\b{wb}/, $frag)
@@ -258,10 +264,7 @@ sub scream ($self, $line, $complaint)
 
 sub _handle_text ($self, $text)
 {
-  if(defined $self->link_address && $self->link_address eq $text)
-  {
-    return;
-  }
+  return if defined $self->link_address && $self->link_address eq $text;
 
   if($self->in_head1)
   {
