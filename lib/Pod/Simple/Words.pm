@@ -6,6 +6,7 @@ use 5.026;
 use experimental qw( signatures );
 use JSON::MaybeXS qw( encode_json );
 use PPI;
+use URI;
 use base qw( Pod::Simple );
 
 # ABSTRACT: Parse words and locations from a POD document
@@ -34,15 +35,21 @@ use base qw( Pod::Simple );
    }
    elsif($type eq 'url_link')
    {
-     # $input is a URL (eg https://metacpan.org)
+     my($url, $section) = @$input;
+     # $url     is the URL without section / fragment
+     # $section is the fragment /section (can be undef)
    }
    elsif($type eq 'pod_link')
    {
-     # $input is a link to POD (eg L<FFI::Platypus>)
+     my($podname, $section) = @$input;
+     # $podname is the POD document (undef for current)
+     # $section is the section      (can be undef)
    }
    elsif($type eq 'man_link')
    {
-     # $input is a manpage (eg perl(1))
+     my($manname, $section) = @$input;
+     # $manname is the MAN document
+     # $section is the section      (can be undef)
    }
    elsif($type eq 'error')
    {
@@ -127,15 +134,30 @@ is recognized as the possessive of the C<Foo::Bar> module.
 
 =item url_link
 
-A regular internet URL link.
+ my($url, $fragment) = @$input;
+
+A regular internet URL link.  The C<$url> is the base URL without any
+fragment section navigation added.  The C<$fragment> is the URL fragment or
+section of the document to link to.  The C<$fragment> will be C<undef> if the
+URL has no fragment.
 
 =item pod_link
 
-A link to another POD document.  Usually a module or a script.
+ my($podname, $section) = @$input;
+
+A link to another POD document.  Usually a module or a script.  The
+C<$podname> is the name of the pod document to link to.  If this is
+C<undef>, it means that the link is to a section inside the current
+document.  The C<$section> is the section of the document to link to.
+The C<$section> will be C<undef> if not linking to a specific section.
 
 =item man_link
 
-A link to a UNIX man page.
+ my($manname, $section) = @$input;
+
+A link to a UNIX man page.  The C<$manname> is the name of the man page.
+The C<$section> is the section of the man page to link to, which will be
+C<undef> if not linking to a specific section.
 
 =item error
 
@@ -188,7 +210,22 @@ sub _handle_element_start ($self, $tagname, $attrhash, @)
 
   if($tagname eq 'L')
   {
-    my @row = ( $attrhash->{type} . "_link", $self->source_filename, $self->line_number, $attrhash->{to}.'' );
+    my @row = ( $attrhash->{type} . "_link", $self->source_filename, $self->line_number, [undef, undef] );
+    if($attrhash->{type} eq 'url')
+    {
+      my $url = URI->new($attrhash->{to});
+      if(defined $url->fragment)
+      {
+        $row[3]->[1] = $url->fragment;
+        $url->fragment(undef);
+      }
+      $row[3]->[0] = "$url";
+    }
+    else
+    {
+      $row[3]->[0] = $attrhash->{to} .      '' if defined $attrhash->{to};
+      $row[3]->[1] = $attrhash->{section} . '' if defined $attrhash->{section};
+    }
     $self->callback->(@row);
     $self->link_address($attrhash->{to});
   }
