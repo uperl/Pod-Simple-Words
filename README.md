@@ -164,6 +164,16 @@ This defines the callback when the specific input items are found.  Types:
     An error that was detected during parsing.  This allows the spell checker
     to check the correctness of the POD at the same time if it so chooses.
 
+## splitter
+
+```
+$parser->splitter($splitter);
+```
+
+The `$splitter` is an instance of [Text::HumanComputerWords](https://metacpan.org/pod/Text::HumanComputerWords), or something
+that implements a `split` method exactly like it does.  It is used to split
+text into human and computer words.  The default is reasonable for Perl.
+
 # METHODS
 
 ## skip\_sections

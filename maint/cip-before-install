@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -ex
+
+cip exec cpanm -n https://dist.wdlabs.com/Text-HumanComputerWords-0.02.tar.gz
+
