@@ -97,7 +97,7 @@ set.
 =cut
 
 __PACKAGE__->_accessorize(
-  qw( line_number in_verbatim in_head1 callback target head1 skip_section_hash skip_words_list link_address in_section_title ),
+  qw( line_number in_verbatim in_head1 callback target head1 skip_section_hash link_address in_section_title ),
 );
 
 =head1 CONSTRUCTOR
@@ -190,7 +190,6 @@ sub new ($class)
   $self->accept_targets( qw( stopwords ));
   $self->target(undef);
   $self->skip_section_hash({});
-  $self->skip_words_list([]);
   $self->callback(sub {
     my $row = encode_json \@_;
     print "--- $row\n";
@@ -214,19 +213,6 @@ shouldn't be spell checked against a human language dictionary.
 sub skip_sections ($self, @sections)
 {
   $self->skip_section_hash->{lc $_} = 1 for @sections;
-}
-
-=head2 skip_words
-
- $parser->skip_words(@regex);
-
-Skip words that match the given list of regular expressions.
-
-=cut
-
-sub skip_words ($self, @regex)
-{
-  push $self->skip_words_list->@*, @regex;
 }
 
 sub _handle_element_start ($self, $tagname, $attrhash, @)
@@ -305,12 +291,6 @@ sub _add_words ($self, $line)
   outer: foreach my $frag (split /\s/, $line)
   {
     next unless $frag =~ /\w/;
-
-    foreach my $regex ($self->skip_words_list->@*)
-    {
-      next outer if $frag =~ $regex;
-    }
-
     if($frag =~ /^[a-z]+::([a-z]+(::[a-z]+)*('s)?)$/i)
     {
       my @row = ( 'module', $self->source_filename, $self->line_number, $frag );
