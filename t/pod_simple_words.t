@@ -713,7 +713,7 @@ subtest 'section events' => sub {
   $parser->callback(sub {
     my($type, undef, $ln, $word) = @_;
     return unless $type eq 'section';
-    push @sections, [$type, $ln, $word];
+    push @sections, [$ln, $word];
   });
 
   $parser->parse_string_document(encode('UTF-8', $pod, Encode::FB_CROAK));
@@ -721,12 +721,50 @@ subtest 'section events' => sub {
   is
     \@sections,
     [
-      [ 'section', 1,  'DESCRIPTION' ],
-      [ 'section', 5,  'METHODS'     ],
-      [ 'section', 9,  'method1'     ],
-      [ 'section', 13, 'method2',    ],
-      [ 'section', 25, 'method3',    ],
+      [ 1,  'DESCRIPTION' ],
+      [ 5,  'METHODS'     ],
+      [ 9,  'method1'     ],
+      [ 13, 'method2',    ],
+      [ 25, 'method3',    ],
     ],
+  ;
+};
+
+subtest 'section events' => sub {
+  my $pod = <<~'POD';
+    =head1 DESCRIPTION
+
+    foo bar baz
+
+    one two three
+
+    =cut
+    POD
+
+  my $parser = Pod::Simple::Words->new;
+  $parser->skip_words(
+    qr/^ba/,
+  );
+
+  my %words;
+
+  $parser->callback(sub {
+    my($type, undef, $ln, $word) = @_;
+    return unless $type eq 'word';
+    push $words{$word}->@*, $ln;
+  });
+
+  $parser->parse_string_document(encode('UTF-8', $pod, Encode::FB_CROAK));
+
+  is
+    \%words,
+    {
+      description => [1],
+      foo         => [3],
+      one         => [5],
+      two         => [5],
+      three       => [5],
+    }
   ;
 };
 

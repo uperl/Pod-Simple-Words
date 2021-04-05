@@ -1,6 +1,7 @@
 Revision history for {{$dist->name}}},
 
 {{$NEXT}}
+  - Add skip_words method (gh#8)
   - Fix bug: bare links were not correctly being returned as
     array reference (gh#7)
 
