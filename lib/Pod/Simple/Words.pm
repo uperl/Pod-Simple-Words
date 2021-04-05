@@ -5,6 +5,7 @@ use warnings;
 use 5.026;
 use experimental qw( signatures );
 use JSON::MaybeXS qw( encode_json );
+use Text::HumanComputerWords;
 use PPI;
 use URI;
 use base qw( Pod::Simple );
@@ -97,7 +98,7 @@ set.
 =cut
 
 __PACKAGE__->_accessorize(
-  qw( line_number in_verbatim in_head1 callback target head1 skip_section_hash link_address in_section_title ),
+  qw( line_number in_verbatim in_head1 callback target head1 skip_section_hash link_address in_section_title human_computer_words ),
 );
 
 =head1 CONSTRUCTOR
@@ -190,6 +191,7 @@ sub new ($class)
   $self->accept_targets( qw( stopwords ));
   $self->target(undef);
   $self->skip_section_hash({});
+  $self->human_computer_words(Text::HumanComputerWords->new);
   $self->callback(sub {
     my $row = encode_json \@_;
     print "--- $row\n";
@@ -288,36 +290,48 @@ sub _handle_element_end ($self, $tagname, @)
 
 sub _add_words ($self, $line)
 {
-  outer: foreach my $frag (split /\s/, $line)
+  foreach my $event ($self->human_computer_words->split($line))
   {
-    next unless $frag =~ /\w/;
-    if($frag =~ /^[a-z]+::([a-z]+(::[a-z]+)*('s)?)$/i)
+    my($type, $word) = @$event;
+
+    my @row;
+
+    if($type eq 'path_name')
     {
-      my @row = ( 'module', $self->source_filename, $self->line_number, $frag );
-      $self->callback->(@row);
+      next
     }
-    elsif($frag =~ /^[a-z]+:\/\//i
-    || $frag =~ /^(file|ftps?|gopher|https?|ldapi|ldaps|mailto|mms|news|nntp|nntps|pop|rlogin|rtsp|sftp|snew|ssh|telnet|tn3270|urn|wss?):\S/i)
+    elsif($type eq 'url_link')
     {
-      my @row = ( 'url_link', $self->source_filename, $self->line_number, [undef,undef] );
-      my $url = URI->new($frag);
-      if(defined $url->fragment)
+      @row = ( $type, $self->source_filename, $self->line_number, [ undef, undef ] );
+
+      local $@ = '';
+      my $url = eval { URI->new($word) };
+      if($@)
       {
-        $row[3]->[1] = $url->fragment;
-        $url->fragment(undef);
+        warn "unable to parse URL: $word $@";
+        $row[3]->[0] = $word;
       }
-      $row[3]->[0] = "$url";
-      $self->callback->(@row);
+      else
+      {
+        if(defined $url->fragment)
+        {
+          $row[3]->[1] = $url->fragment;
+          $url->fragment(undef);
+        }
+        $row[3]->[0] = "$url";
+      }
+    }
+    elsif($type =~ /^(word|module)$/)
+    {
+      @row = ( $type, $self->source_filename, $self->line_number, $word );
     }
     else
     {
-      foreach my $word (split /\b{wb}/, $frag)
-      {
-        next unless $word =~ /\w/;
-        my @row = ( 'word', $self->source_filename, $self->line_number, $word );
-        $self->callback->(@row);
-      }
+      warn "unknown type: $type";
+      next;
     }
+
+    $self->callback->(@row);
   }
 }
 
