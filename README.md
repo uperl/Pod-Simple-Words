@@ -177,6 +177,14 @@ itself will be included, but the content of the section will not.  This is usefu
 for skipping `CONTRIBUTOR` or similar sections which are usually mostly names and
 shouldn't be spell checked against a human language dictionary.
 
+## skip\_words
+
+```
+$parser->skip_words(@regex);
+```
+
+Skip words that match the given list of regular expressions.
+
 # SEE ALSO
 
 - [Pod::Spell](https://metacpan.org/pod/Pod::Spell)
