@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}},
 
 {{$NEXT}}
+
+0.06      2021-04-18 16:32:12 -0600
   - Add splitter property.  This is a Text::HumanComputerWords
     instance by default, but anything with a compatible split
     method can be used.  (gh#10)
