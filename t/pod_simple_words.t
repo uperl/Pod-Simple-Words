@@ -517,9 +517,9 @@ subtest 'bare links' => sub {
   is
     \@links,
     [
-      [ 'url_link', 3, [ 'http://foo.test/path',              'baz' ] ],
-      [ 'url_link', 5, [ 'ftp://user:password@bar.test/path', undef ] ],
-      [ 'url_link', 7, [ 'mailto:roger@test',                 undef ] ],
+      [ 'url_link', 3, 'http://foo.test/path#baz'           ],
+      [ 'url_link', 5, 'ftp://user:password@bar.test/path', ],
+      [ 'url_link', 7, 'mailto:roger@test',                 ],
     ],
   ;
 

@@ -36,9 +36,7 @@ use base qw( Pod::Simple );
    }
    elsif($type eq 'url_link')
    {
-     my($url, $section) = @$input;
-     # $url     is the URL without section / fragment
-     # $section is the fragment /section (can be undef)
+     # $input   is the URL
    }
    elsif($type eq 'pod_link')
    {
@@ -139,12 +137,7 @@ is recognized as the possessive of the C<Foo::Bar> module.
 
 =item url_link
 
- my($url, $fragment) = @$input;
-
-A regular internet URL link.  The C<$url> is the base URL without any
-fragment section navigation added.  The C<$fragment> is the URL fragment or
-section of the document to link to.  The C<$fragment> will be C<undef> if the
-URL has no fragment.
+A regular internet URL link.
 
 =item pod_link
 
@@ -176,6 +169,9 @@ An error that was detected during parsing.  This allows the spell checker
 to check the correctness of the POD at the same time if it so chooses.
 
 =back
+
+Additional arbitrary types can be added to the C<splitter> class in addition
+to these.
 
 =head2 splitter
 
@@ -308,44 +304,7 @@ sub _add_words ($self, $line)
   foreach my $event ($self->splitter->split($line))
   {
     my($type, $word) = @$event;
-
-    my @row;
-
-    if($type eq 'path_name')
-    {
-      next
-    }
-    elsif($type eq 'url_link')
-    {
-      @row = ( $type, $self->source_filename, $self->line_number, [ undef, undef ] );
-
-      local $@ = '';
-      my $url = eval { URI->new($word) };
-      if($@)
-      {
-        warn "unable to parse URL: $word $@";
-        $row[3]->[0] = $word;
-      }
-      else
-      {
-        if(defined $url->fragment)
-        {
-          $row[3]->[1] = $url->fragment;
-          $url->fragment(undef);
-        }
-        $row[3]->[0] = "$url";
-      }
-    }
-    elsif($type =~ /^(word|module)$/)
-    {
-      @row = ( $type, $self->source_filename, $self->line_number, $word );
-    }
-    else
-    {
-      warn "unknown type: $type";
-      next;
-    }
-
+    my @row = ( $type, $self->source_filename, $self->line_number, $word );
     $self->callback->(@row);
   }
 }
