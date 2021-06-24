@@ -67,7 +67,6 @@ jobs:
           export PATH="/c/cx/bin:$PATH"
           yes | cpan App::cpanminus || true
           cpanm -n Dist::Zilla
-          cpanm -n https://dist.wdlabs.com/Text-HumanComputerWords-0.02.tar.gz
           perl -S dzil authordeps --missing | perl -S cpanm -n
           perl -S dzil listdeps --missing   | perl -S cpanm -n
 
