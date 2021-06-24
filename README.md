@@ -1,4 +1,4 @@
-# Pod::Simple::Words ![linux](https://github.com/uperl/Pod-Simple-Words/workflows/linux/badge.svg) ![windows](https://github.com/uperl/Pod-Simple-Words/workflows/windows/badge.svg) ![macos](https://github.com/uperl/Pod-Simple-Words/workflows/macos/badge.svg) ![cygwin](https://github.com/uperl/Pod-Simple-Words/workflows/cygwin/badge.svg) ![msys2-mingw](https://github.com/uperl/Pod-Simple-Words/workflows/msys2-mingw/badge.svg)
+# Pod::Simple::Words ![static](https://github.com/uperl/Pod-Simple-Words/workflows/static/badge.svg) ![linux](https://github.com/uperl/Pod-Simple-Words/workflows/linux/badge.svg) ![windows](https://github.com/uperl/Pod-Simple-Words/workflows/windows/badge.svg) ![macos](https://github.com/uperl/Pod-Simple-Words/workflows/macos/badge.svg) ![cygwin](https://github.com/uperl/Pod-Simple-Words/workflows/cygwin/badge.svg) ![msys2-mingw](https://github.com/uperl/Pod-Simple-Words/workflows/msys2-mingw/badge.svg)
 
 Parse words and locations from a POD document
 
