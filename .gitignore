@@ -2,4 +2,7 @@ Pod-Simple-Words-*
 /.build/
 *.swp
 
-
+/Pod-Simple-Words-*
+/.build
+*.old
+*.orig
